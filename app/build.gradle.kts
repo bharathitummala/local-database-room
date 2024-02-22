@@ -43,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        dataBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -56,9 +57,12 @@ android {
 
 dependencies {
 
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
     val room_version = "2.6.1"
     implementation ("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
     implementation ("androidx.room:room-rxjava2:$room_version")
     implementation ("androidx.room:room-rxjava3:$room_version")
     implementation ("androidx.room:room-guava:$room_version")

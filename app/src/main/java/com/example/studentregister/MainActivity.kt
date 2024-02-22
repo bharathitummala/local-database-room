@@ -1,21 +1,50 @@
 package com.example.studentregister
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.studentregister.ui.theme.StudentRegisterTheme
+import android.widget.Button
+import android.widget.EditText
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+import androidx.appcompat.app.AppCompatActivity
+
+import androidx.lifecycle.ViewModelProvider
+import com.example.studentregister.db.Student
+import com.example.studentregister.db.StudentDatabase
+
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var nameEditText: EditText
+    private lateinit var emailEditText: EditText
+    private lateinit var saveButton: Button
+    private lateinit var clearButton: Button
+    private lateinit var viewModel: StudentViewModel
+    override fun onCreate(savedInstaceState: Bundle?) {
+        super.onCreate(savedInstaceState)
         setContentView(R.layout.activity_main)
+        nameEditText = findViewById(R.id.etName)
+        emailEditText = findViewById(R.id.etEmail)
+        saveButton = findViewById(R.id.btnSave)
+        clearButton = findViewById(R.id.btnClear)
 
+        val dao = StudentDatabase.getInstance(application).studentDao
+        val factory = StudentViewModelFactory(dao)
+        viewModel = ViewModelProvider(this, factory).get(StudentViewModel::class.java)
+        saveButton.setOnClickListener{
+            saveStudentData()
+            clearInput()
+        }
+        clearButton.setOnClickListener{
+            clearInput()
+        }
+
+    }
+
+    private fun saveStudentData(){
+        viewModel.insertStudent(Student(0, nameEditText.text.toString(),
+            emailEditText.text.toString()))
+
+    }
+    private fun clearInput(){
+        nameEditText.setText("")
+        emailEditText.setText("")
     }
 }
