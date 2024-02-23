@@ -3,12 +3,14 @@ package com.example.studentregister
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.studentregister.db.Student
 import com.example.studentregister.db.StudentDatabase
+import java.sql.Time
 
 
 class MainActivity : AppCompatActivity() {
@@ -19,6 +21,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: StudentViewModel
     private lateinit var studentRecyclerView : RecyclerView
     private lateinit var adapter: StudentRecyclerViewAdapter
+    private lateinit var selectedStudent:Student
+    private  var isListItemClicked = false
     override fun onCreate(savedInstaceState: Bundle?) {
         super.onCreate(savedInstaceState)
         setContentView(R.layout.activity_main)
@@ -31,12 +35,22 @@ class MainActivity : AppCompatActivity() {
         val dao = StudentDatabase.getInstance(application).studentDao
         val factory = StudentViewModelFactory(dao)
         viewModel = ViewModelProvider(this, factory).get(StudentViewModel::class.java)
-        saveButton.setOnClickListener{
-            saveStudentData()
-            clearInput()
+        saveButton.setOnClickListener {
+            if (isListItemClicked) {
+                updateStudentData()
+                clearInput()
+            } else {
+                saveStudentData()
+                clearInput()
+            }
         }
-        clearButton.setOnClickListener{
-            clearInput()
+        clearButton.setOnClickListener {
+            if (isListItemClicked) {
+                deleteStudentData()
+                clearInput()
+            } else {
+                clearInput()
+            }
         }
         initRecyclerView()
 
@@ -47,6 +61,28 @@ class MainActivity : AppCompatActivity() {
             emailEditText.text.toString()))
 
     }
+    private fun updateStudentData(){
+        viewModel.updateStudent(
+            Student(selectedStudent.id,
+                nameEditText.text.toString(),
+                emailEditText.text.toString())
+        )
+
+        saveButton.text = "Save"
+        clearButton.text= "Clear"
+        isListItemClicked = false
+    }
+    private fun deleteStudentData(){
+        viewModel.deleteStudent(
+            Student(selectedStudent.id,
+                nameEditText.text.toString(),
+                emailEditText.text.toString())
+        )
+
+        saveButton.text = "Save"
+        clearButton.text= "Clear"
+        isListItemClicked = false
+    }
     private fun clearInput(){
         nameEditText.setText("")
         emailEditText.setText("")
@@ -54,7 +90,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun initRecyclerView(){
     studentRecyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = StudentRecyclerViewAdapter()
+        adapter = StudentRecyclerViewAdapter{
+            selectedItem: Student -> listItemClicked(selectedItem)
+        }
         studentRecyclerView.adapter = adapter
         displayStudentsList()
     }
@@ -63,5 +101,14 @@ class MainActivity : AppCompatActivity() {
         adapter.setList(it)
         adapter.notifyDataSetChanged()
     }
+
+    } fun listItemClicked(student: Student){
+       /* Toast.makeText(this , "Student name is ${student.name}", Toast.LENGTH_LONG).show()*/
+        selectedStudent = student
+        saveButton.text = "Update"
+        clearButton.text= "Delete"
+        isListItemClicked = true
+        nameEditText.setText(selectedStudent.name)
+        emailEditText.setText(selectedStudent.email)
     }
 }
